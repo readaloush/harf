@@ -1,0 +1,166 @@
+{
+ "test_accuracy": 0.978,
+ "test_top3_accuracy": 0.9985,
+ "test_images": 3360,
+ "errors": 74,
+ "parameters": 679804,
+ "best_epoch": 19,
+ "val_accuracy": 0.9814,
+ "per_class": {
+  "alef": {
+   "precision": 1.0,
+   "recall": 0.983
+  },
+  "beh": {
+   "precision": 1.0,
+   "recall": 0.992
+  },
+  "teh": {
+   "precision": 0.974,
+   "recall": 0.942
+  },
+  "theh": {
+   "precision": 0.944,
+   "recall": 0.992
+  },
+  "jeem": {
+   "precision": 0.992,
+   "recall": 1.0
+  },
+  "hah": {
+   "precision": 0.992,
+   "recall": 0.983
+  },
+  "khah": {
+   "precision": 0.992,
+   "recall": 0.992
+  },
+  "dal": {
+   "precision": 0.982,
+   "recall": 0.925
+  },
+  "thal": {
+   "precision": 0.958,
+   "recall": 0.942
+  },
+  "reh": {
+   "precision": 0.922,
+   "recall": 0.992
+  },
+  "zain": {
+   "precision": 0.966,
+   "recall": 0.933
+  },
+  "seen": {
+   "precision": 1.0,
+   "recall": 1.0
+  },
+  "sheen": {
+   "precision": 0.992,
+   "recall": 1.0
+  },
+  "sad": {
+   "precision": 0.967,
+   "recall": 0.992
+  },
+  "dad": {
+   "precision": 0.991,
+   "recall": 0.967
+  },
+  "tah": {
+   "precision": 0.96,
+   "recall": 1.0
+  },
+  "zah": {
+   "precision": 1.0,
+   "recall": 0.958
+  },
+  "ain": {
+   "precision": 0.96,
+   "recall": 1.0
+  },
+  "ghain": {
+   "precision": 1.0,
+   "recall": 0.992
+  },
+  "feh": {
+   "precision": 0.967,
+   "recall": 0.983
+  },
+  "qaf": {
+   "precision": 0.967,
+   "recall": 0.975
+  },
+  "kaf": {
+   "precision": 0.976,
+   "recall": 1.0
+  },
+  "lam": {
+   "precision": 0.968,
+   "recall": 1.0
+  },
+  "meem": {
+   "precision": 0.984,
+   "recall": 1.0
+  },
+  "noon": {
+   "precision": 0.991,
+   "recall": 0.9
+  },
+  "heh": {
+   "precision": 0.991,
+   "recall": 0.967
+  },
+  "waw": {
+   "precision": 0.959,
+   "recall": 0.983
+  },
+  "yeh": {
+   "precision": 1.0,
+   "recall": 0.992
+  }
+ },
+ "most_confused": [
+  {
+   "true": "dal",
+   "predicted": "reh",
+   "count": 6
+  },
+  {
+   "true": "zain",
+   "predicted": "thal",
+   "count": 5
+  },
+  {
+   "true": "zah",
+   "predicted": "tah",
+   "count": 5
+  },
+  {
+   "true": "thal",
+   "predicted": "zain",
+   "count": 4
+  },
+  {
+   "true": "teh",
+   "predicted": "theh",
+   "count": 4
+  },
+  {
+   "true": "zain",
+   "predicted": "reh",
+   "count": 3
+  },
+  {
+   "true": "noon",
+   "predicted": "theh",
+   "count": 3
+  },
+  {
+   "true": "noon",
+   "predicted": "lam",
+   "count": 3
+  }
+ ],
+ "model_size_mb": 2.7
+}

@@ -1,0 +1,16 @@
+[train] EMNIST 'i' class: 260 dotted, 4540 dotless
+latin: train 57600  val 6400  classes 32
+HarfNet: 680,320 parameters
+epoch   1  loss 1.9125  train 0.6057  val 0.8402  131s *
+epoch   2  loss 1.0316  train 0.8902  val 0.9225  133s *
+epoch   3  loss 0.9370  train 0.9153  val 0.9323  124s *
+epoch   4  loss 0.8804  train 0.9300  val 0.9431  158s *
+epoch   5  loss 0.8491  train 0.9372  val 0.9384  140s
+epoch   6  loss 0.8312  train 0.9429  val 0.9448  137s *
+epoch   7  loss 0.8151  train 0.9459  val 0.9500  144s *
+epoch   8  loss 0.7982  train 0.9518  val 0.9594  136s *
+epoch   9  loss 0.7847  train 0.9557  val 0.9594  130s *
+epoch  10  loss 0.7719  train 0.9578  val 0.9595  125s *
+epoch  11  loss 0.7596  train 0.9630  val 0.9617  128s *
+epoch  12  loss 0.7536  train 0.9649  val 0.9625  134s *
+best val acc 0.9625

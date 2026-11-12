@@ -1,0 +1,33 @@
+train 12096  val 1344 (held-out blocks)
+HarfNet: 679,804 parameters
+epoch   1  loss 3.0227  train 0.1578  val 0.3646  35s *
+epoch   2  loss 1.9752  train 0.5502  val 0.6659  35s *
+epoch   3  loss 1.2851  train 0.8067  val 0.8452  36s *
+epoch   4  loss 1.0890  train 0.8734  val 0.7240  38s
+epoch   5  loss 1.0220  train 0.8920  val 0.8676  35s *
+epoch   6  loss 0.9673  train 0.9123  val 0.7879  34s
+epoch   7  loss 0.9395  train 0.9161  val 0.9539  34s *
+epoch   8  loss 0.8820  train 0.9400  val 0.8795  36s
+epoch   9  loss 0.8522  train 0.9471  val 0.9509  36s
+epoch  10  loss 0.8434  train 0.9470  val 0.9278  36s
+epoch  11  loss 0.8154  train 0.9548  val 0.9494  34s
+epoch  12  loss 0.8059  train 0.9569  val 0.9583  34s *
+epoch  13  loss 0.7870  train 0.9606  val 0.9382  33s
+epoch  14  loss 0.7785  train 0.9650  val 0.9695  34s *
+epoch  15  loss 0.7640  train 0.9680  val 0.9635  35s
+epoch  16  loss 0.7574  train 0.9714  val 0.9650  34s
+epoch  17  loss 0.7459  train 0.9744  val 0.9769  34s *
+epoch  18  loss 0.7441  train 0.9735  val 0.9732  35s
+epoch  19  loss 0.7307  train 0.9784  val 0.9814  34s *
+epoch  20  loss 0.7227  train 0.9809  val 0.9494  35s
+epoch  21  loss 0.7163  train 0.9829  val 0.9747  36s
+epoch  22  loss 0.7140  train 0.9821  val 0.9754  34s
+epoch  23  loss 0.7102  train 0.9836  val 0.9784  35s
+epoch  24  loss 0.7054  train 0.9851  val 0.9732  35s
+epoch  25  loss 0.6997  train 0.9865  val 0.9747  36s
+epoch  26  loss 0.6955  train 0.9882  val 0.9747  36s
+epoch  27  loss 0.6925  train 0.9891  val 0.9792  36s
+epoch  28  loss 0.6898  train 0.9899  val 0.9747  35s
+epoch  29  loss 0.6900  train 0.9894  val 0.9762  36s
+epoch  30  loss 0.6895  train 0.9894  val 0.9762  37s
+best val acc 0.9814
