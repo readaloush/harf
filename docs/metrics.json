@@ -1,0 +1,354 @@
+{
+ "arabic": {
+  "test_accuracy": 0.978,
+  "test_top3_accuracy": 0.9985,
+  "test_images": 3360,
+  "errors": 74,
+  "parameters": 679804,
+  "best_epoch": 19,
+  "val_accuracy": 0.9814,
+  "per_class": {
+   "alef": {
+    "precision": 1.0,
+    "recall": 0.983
+   },
+   "beh": {
+    "precision": 1.0,
+    "recall": 0.992
+   },
+   "teh": {
+    "precision": 0.974,
+    "recall": 0.942
+   },
+   "theh": {
+    "precision": 0.944,
+    "recall": 0.992
+   },
+   "jeem": {
+    "precision": 0.992,
+    "recall": 1.0
+   },
+   "hah": {
+    "precision": 0.992,
+    "recall": 0.983
+   },
+   "khah": {
+    "precision": 0.992,
+    "recall": 0.992
+   },
+   "dal": {
+    "precision": 0.982,
+    "recall": 0.925
+   },
+   "thal": {
+    "precision": 0.958,
+    "recall": 0.942
+   },
+   "reh": {
+    "precision": 0.922,
+    "recall": 0.992
+   },
+   "zain": {
+    "precision": 0.966,
+    "recall": 0.933
+   },
+   "seen": {
+    "precision": 1.0,
+    "recall": 1.0
+   },
+   "sheen": {
+    "precision": 0.992,
+    "recall": 1.0
+   },
+   "sad": {
+    "precision": 0.967,
+    "recall": 0.992
+   },
+   "dad": {
+    "precision": 0.991,
+    "recall": 0.967
+   },
+   "tah": {
+    "precision": 0.96,
+    "recall": 1.0
+   },
+   "zah": {
+    "precision": 1.0,
+    "recall": 0.958
+   },
+   "ain": {
+    "precision": 0.96,
+    "recall": 1.0
+   },
+   "ghain": {
+    "precision": 1.0,
+    "recall": 0.992
+   },
+   "feh": {
+    "precision": 0.967,
+    "recall": 0.983
+   },
+   "qaf": {
+    "precision": 0.967,
+    "recall": 0.975
+   },
+   "kaf": {
+    "precision": 0.976,
+    "recall": 1.0
+   },
+   "lam": {
+    "precision": 0.968,
+    "recall": 1.0
+   },
+   "meem": {
+    "precision": 0.984,
+    "recall": 1.0
+   },
+   "noon": {
+    "precision": 0.991,
+    "recall": 0.9
+   },
+   "heh": {
+    "precision": 0.991,
+    "recall": 0.967
+   },
+   "waw": {
+    "precision": 0.959,
+    "recall": 0.983
+   },
+   "yeh": {
+    "precision": 1.0,
+    "recall": 0.992
+   }
+  },
+  "most_confused": [
+   {
+    "true": "dal",
+    "predicted": "reh",
+    "count": 6
+   },
+   {
+    "true": "zain",
+    "predicted": "thal",
+    "count": 5
+   },
+   {
+    "true": "zah",
+    "predicted": "tah",
+    "count": 5
+   },
+   {
+    "true": "thal",
+    "predicted": "zain",
+    "count": 4
+   },
+   {
+    "true": "teh",
+    "predicted": "theh",
+    "count": 4
+   },
+   {
+    "true": "zain",
+    "predicted": "reh",
+    "count": 3
+   },
+   {
+    "true": "noon",
+    "predicted": "theh",
+    "count": 3
+   },
+   {
+    "true": "noon",
+    "predicted": "lam",
+    "count": 3
+   }
+  ],
+  "model_size_mb": 2.7
+ },
+ "latin": {
+  "test_accuracy": 0.96,
+  "test_top3_accuracy": 0.9968,
+  "test_images": 25563,
+  "errors": 1023,
+  "parameters": 680320,
+  "best_epoch": 12,
+  "val_accuracy": 0.9625,
+  "per_class": {
+   "a": {
+    "precision": 0.965,
+    "recall": 0.964
+   },
+   "b": {
+    "precision": 0.988,
+    "recall": 0.988
+   },
+   "c": {
+    "precision": 0.985,
+    "recall": 0.973
+   },
+   "c-cedilla": {
+    "precision": 1.0,
+    "recall": 0.995
+   },
+   "d": {
+    "precision": 0.954,
+    "recall": 0.986
+   },
+   "e": {
+    "precision": 0.975,
+    "recall": 0.986
+   },
+   "f": {
+    "precision": 0.979,
+    "recall": 0.984
+   },
+   "g": {
+    "precision": 0.911,
+    "recall": 0.877
+   },
+   "g-breve": {
+    "precision": 1.0,
+    "recall": 1.0
+   },
+   "h": {
+    "precision": 0.97,
+    "recall": 0.974
+   },
+   "dotless-i": {
+    "precision": 0.804,
+    "recall": 0.591
+   },
+   "dotted-i": {
+    "precision": 0.978,
+    "recall": 0.981
+   },
+   "j": {
+    "precision": 0.969,
+    "recall": 0.968
+   },
+   "k": {
+    "precision": 0.991,
+    "recall": 0.993
+   },
+   "l": {
+    "precision": 0.695,
+    "recall": 0.853
+   },
+   "m": {
+    "precision": 0.985,
+    "recall": 0.996
+   },
+   "n": {
+    "precision": 0.976,
+    "recall": 0.963
+   },
+   "o": {
+    "precision": 0.988,
+    "recall": 0.958
+   },
+   "o-umlaut": {
+    "precision": 0.995,
+    "recall": 0.995
+   },
+   "p": {
+    "precision": 0.991,
+    "recall": 0.993
+   },
+   "q": {
+    "precision": 0.881,
+    "recall": 0.921
+   },
+   "r": {
+    "precision": 0.975,
+    "recall": 0.975
+   },
+   "s": {
+    "precision": 0.991,
+    "recall": 0.981
+   },
+   "s-cedilla": {
+    "precision": 1.0,
+    "recall": 0.994
+   },
+   "t": {
+    "precision": 0.978,
+    "recall": 0.984
+   },
+   "u": {
+    "precision": 0.954,
+    "recall": 0.955
+   },
+   "u-umlaut": {
+    "precision": 0.994,
+    "recall": 0.998
+   },
+   "v": {
+    "precision": 0.958,
+    "recall": 0.934
+   },
+   "w": {
+    "precision": 0.991,
+    "recall": 0.988
+   },
+   "x": {
+    "precision": 0.984,
+    "recall": 0.981
+   },
+   "y": {
+    "precision": 0.941,
+    "recall": 0.983
+   },
+   "z": {
+    "precision": 0.993,
+    "recall": 0.995
+   }
+  },
+  "most_confused": [
+   {
+    "true": "dotless-i",
+    "predicted": "l",
+    "count": 286
+   },
+   {
+    "true": "l",
+    "predicted": "dotless-i",
+    "count": 101
+   },
+   {
+    "true": "g",
+    "predicted": "q",
+    "count": 83
+   },
+   {
+    "true": "q",
+    "predicted": "g",
+    "count": 48
+   },
+   {
+    "true": "v",
+    "predicted": "u",
+    "count": 24
+   },
+   {
+    "true": "u",
+    "predicted": "v",
+    "count": 24
+   },
+   {
+    "true": "o",
+    "predicted": "d",
+    "count": 19
+   },
+   {
+    "true": "v",
+    "predicted": "y",
+    "count": 18
+   }
+  ],
+  "real_handwriting_accuracy": 0.9522,
+  "real_handwriting_images": 20763,
+  "synthetic_diacritic_accuracy": 0.9938,
+  "synthetic_diacritic_images": 4800,
+  "model_size_mb": 2.7
+ }
+}

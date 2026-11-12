@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harf · Arabic handwritten letter recognition</title>
+<meta name="description" content="Draw an Arabic, Turkish or English letter and a small CNN recognises it, running entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white'%3E%D8%AD%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #f6f1e7; --card: #fffdf8; --ink: #1c1a17; --muted: #746d62;
+    --line: #e2d9c8; --accent: #0f766e; --accent-soft: #d6ebe7;
+    --arabic: "Noto Naskh Arabic", "Amiri", "Scheherazade New", "Geeza Pro", "Traditional Arabic", "Segoe UI", serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--sans); }
+  main { max-width: 940px; margin: 0 auto; padding: 44px 20px 56px; }
+  header { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 6px; }
+  h1 { font-size: 34px; letter-spacing: -0.02em; margin: 0; font-weight: 700; }
+  h1 span { font-family: var(--arabic); font-weight: 400; color: var(--accent); margin-inline-start: 10px; font-size: 38px; }
+  .lede { color: var(--muted); max-width: 60ch; margin: 0 0 18px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 22px; align-items: start; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } main { padding-top: 28px; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .label { font: 600 11px/1 var(--sans); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+  #pad { width: 100%; aspect-ratio: 1; display: block; border-radius: 10px; background: #fff; border: 1px solid var(--line);
+         touch-action: none; cursor: crosshair;
+         background-image: linear-gradient(var(--line), var(--line)); background-size: 100% 1px; background-position: 0 68%; background-repeat: no-repeat; }
+  .row { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+  button { font: 600 14px var(--sans); padding: 9px 16px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; white-space: nowrap; }
+  button:hover { border-color: var(--ink); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: 0.4; cursor: default; border-color: var(--line); }
+  .hint { color: var(--muted); font-size: 13px; margin-inline-start: auto; }
+  .top { display: flex; align-items: center; gap: 20px; min-height: 128px; }
+  .glyph { font: 400 96px/1.25 var(--arabic); width: 128px; height: 128px; display: grid; place-items: center;
+           background: var(--accent-soft); color: var(--accent); border-radius: 12px; flex: none; }
+  .glyph.empty { background: transparent; border: 1px dashed var(--line); color: var(--line); }
+  .name { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+  .conf { color: var(--muted); font-size: 14px; }
+  .bars { margin-top: 18px; display: grid; gap: 7px; }
+  .bar { display: grid; grid-template-columns: 30px 64px 1fr 52px; gap: 10px; align-items: center; font-size: 14px; }
+  .bar .ar { font: 22px/1 var(--arabic); text-align: center; }
+  .bar .track { height: 8px; background: #efe8da; border-radius: 4px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--ink); border-radius: 4px; width: 0; transition: width .18s ease; }
+  .bar:first-child .fill { background: var(--accent); }
+  .bar .pct { font: 13px var(--mono); text-align: end; color: var(--muted); direction: ltr; }
+  .seen { display: flex; gap: 14px; align-items: center; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  #seen { width: 80px; height: 80px; image-rendering: pixelated; border-radius: 6px; background: #000; flex: none; }
+  .seen p { margin: 0; font-size: 13px; color: var(--muted); }
+  .seen p b { color: var(--ink); }
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 22px; }
+  @media (max-width: 760px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+  .fact { border-top: 2px solid var(--ink); padding-top: 10px; }
+  .fact b { display: block; font: 600 22px var(--mono); letter-spacing: -0.02em; }
+  .fact span { font-size: 13px; color: var(--muted); }
+  .alphabet { margin-top: 26px; }
+  .alphabet .letters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .alphabet .letters span { font: 24px/1 var(--arabic); width: 40px; height: 44px; display: grid; place-items: center;
+                            border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .alphabet .letters span.hit { background: var(--accent); color: #fff; border-color: var(--accent); }
+  footer { margin-top: 30px; font-size: 13px; color: var(--muted); }
+  a { color: var(--accent); }
+  #status { font: 12px var(--mono); color: var(--muted); }
+  .seg { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  .seg button { border: 0; background: transparent; padding: 5px 11px; border-radius: 7px; font-size: 13px; color: var(--muted); }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+  .langs { margin-inline-start: auto; align-self: center; }
+  .scripts { display: inline-flex; margin: 0 0 18px; }
+  .scripts button { display: flex; align-items: center; gap: 9px; padding: 8px 16px 8px 12px; font-size: 14px; }
+  .scripts button b { font: 400 20px/1 var(--arabic); min-width: 26px; text-align: center; }
+  html[data-script="latin"] .glyph { font-family: var(--sans); font-weight: 600; font-size: 84px; }
+  html[data-script="latin"] .bar .ar { font: 600 18px/1 var(--sans); }
+  html[data-script="latin"] .alphabet .letters span { font: 500 17px/1 var(--sans); width: 46px; }
+  html[lang="ar"] body { font-family: var(--arabic), var(--sans); font-size: 17px; }
+  html[lang="ar"] .label { letter-spacing: 0; font-size: 13px; }
+  html[lang="ar"] .fact b { direction: ltr; text-align: end; }
+  html[lang="ar"] #status { font-family: var(--arabic); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Harf<span lang="ar">حرف</span></h1>
+    <span id="status"></span>
+    <div class="langs seg" role="group" aria-label="Language">
+      <button data-lang="en" lang="en">English</button>
+      <button data-lang="tr" lang="tr">Türkçe</button>
+      <button data-lang="ar" lang="ar">العربية</button>
+    </div>
+  </header>
+  <p class="lede" data-i18n="lede"></p>
+
+  <div class="scripts seg" role="group" id="scripts">
+    <button data-script="arabic"><b lang="ar">ع</b><span data-i18n="sArabic"></span></button>
+    <button data-script="latin"><b>Aç</b><span data-i18n="sLatin"></span></button>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <p class="label" data-i18n="draw"></p>
+      <canvas id="pad" width="640" height="640" aria-label="Drawing area"></canvas>
+      <div class="row">
+        <button id="undo" disabled data-i18n="undo"></button>
+        <button id="clear" disabled data-i18n="clear"></button>
+        <span class="hint" data-i18n="hint"></span>
+      </div>
+    </section>
+
+    <section class="card" aria-live="polite">
+      <p class="label" data-i18n="prediction"></p>
+      <div class="top">
+        <div class="glyph empty" id="glyph">?</div>
+        <div>
+          <div class="name" id="name"></div>
+          <div class="conf" id="conf"></div>
+        </div>
+      </div>
+      <div class="bars" id="bars"></div>
+      <div class="seen">
+        <canvas id="seen" width="32" height="32" aria-label="Model input"></canvas>
+        <p id="seenText"></p>
+      </div>
+    </section>
+  </div>
+
+  <div class="facts" id="facts"></div>
+
+  <section class="alphabet">
+    <p class="label" id="classesLabel"></p>
+    <div class="letters" id="letters"></div>
+  </section>
+
+  <footer id="footer"></footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.wasm.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+
+// ---------- the two models ----------
+const AR = [["ا","alef","ألف"],["ب","beh","باء"],["ت","teh","تاء"],["ث","theh","ثاء"],["ج","jeem","جيم"],["ح","hah","حاء"],["خ","khah","خاء"],["د","dal","دال"],["ذ","thal","ذال"],["ر","reh","راء"],["ز","zain","زاي"],["س","seen","سين"],["ش","sheen","شين"],["ص","sad","صاد"],["ض","dad","ضاد"],["ط","tah","طاء"],["ظ","zah","ظاء"],["ع","ain","عين"],["غ","ghain","غين"],["ف","feh","فاء"],["ق","qaf","قاف"],["ك","kaf","كاف"],["ل","lam","لام"],["م","meem","ميم"],["ن","noon","نون"],["ه","heh","هاء"],["و","waw","واو"],["ي","yeh","ياء"]];
+const LATIN = "A a,B b,C c,Ç ç,D d,E e,F f,G g,Ğ ğ,H h,I ı,İ i,J j,K k,L l,M m,N n,O o,Ö ö,P p,Q q,R r,S s,Ş ş,T t,U u,Ü ü,V v,W w,X x,Y y,Z z".split(",").map(s => s.split(" "));
+// size: model input side. target: longest side of the letter inside that frame. stroke: pen width in model
+// pixels. blur: passes of a 3x3 smoothing kernel. All matched to how each dataset's images look.
+const SCRIPTS = {
+  arabic: { model: "harfnet.onnx", size: 32, target: 19, stroke: 2.3, blur: 0, n: 28, session: null },
+  latin:  { model: "harfnet_latin.onnx", size: 28, target: 22, stroke: 2.6, blur: 1, n: 32, session: null },
+};
+
+// ---------- interface text ----------
+const REPO = '<a href="https://github.com/readaloush/harf">github.com/readaloush/harf</a>';
+const T = {
+  en: {
+    title: "Harf · Handwritten letter recognition in Arabic, Turkish and English",
+    lede: "Draw one letter. A small CNN reads it on your device; nothing you draw leaves this page.",
+    sArabic: "Arabic", sLatin: "Turkish + English",
+    draw: "Draw here", undo: "Undo", clear: "Clear", hint: "mouse, pen or finger", prediction: "Prediction",
+    waiting: "Waiting for a letter", waitingSub: "The five most likely letters appear below.",
+    sure: p => `${p}% confident`, unsure: p => `${p}% — not sure; check the runners-up`,
+    seen: n => `<b>What the model sees.</b> Your strokes are cropped, centred and redrawn as a ${n}×${n} white-on-black image, the format of the training data.`,
+    classes: n => `The ${n} classes`,
+    footArabic: "Arabic model: trained on the Arabic Handwritten Characters Dataset (El-Sawy, Loey &amp; El-Bakry, 2017).",
+    footLatin: "Latin model: trained on EMNIST Letters (Cohen et al., 2017). No handwriting dataset covers ç, ğ, İ, ö, ş, ü, so their training images are real EMNIST letters with computer-drawn marks added; expect them to be less reliable than the other letters.",
+    footCommon: `Code: ${REPO}. Both models learned from scanned pen writing, so mouse drawings are harder for them than the test sets suggest.`,
+    loading: "loading model…", ready: ms => `model ready · ${ms} ms to load`, failed: m => "could not load the model: " + m,
+    file: "opened as a file: browsers block the model here. Run  python3 -m http.server 8000  in this folder and open http://localhost:8000",
+    f1: "accuracy on the official test set", f1l: "accuracy on real handwriting (EMNIST test letters)", f2: "correct letter in the top 3", f3: mb => `parameters, ${mb} MB ONNX file`,
+    f4a: "test images from unseen writers", f4l: "test images, 4,800 of them with synthetic Turkish marks",
+  },
+  tr: {
+    title: "Harf · Arapça, Türkçe ve İngilizce el yazısı harf tanıma",
+    lede: "Tek bir harf çizin. Küçük bir CNN harfi kendi cihazınızda okur; çizdikleriniz bu sayfadan dışarı çıkmaz.",
+    sArabic: "Arapça", sLatin: "Türkçe + İngilizce",
+    draw: "Buraya çizin", undo: "Geri al", clear: "Temizle", hint: "fare, kalem veya parmak", prediction: "Tahmin",
+    waiting: "Harf bekleniyor", waitingSub: "En olası beş harf aşağıda görünür.",
+    sure: p => `%${p} emin`, unsure: p => `%${p} — emin değil; diğer adaylara bakın`,
+    seen: n => `<b>Modelin gördüğü.</b> Çizginiz kırpılır, ortalanır ve eğitim verisinin biçiminde, siyah üzerine beyaz ${n}×${n} bir görüntü olarak yeniden çizilir.`,
+    classes: n => `${n} sınıf`,
+    footArabic: "Arapça model: Arabic Handwritten Characters Dataset ile eğitildi (El-Sawy, Loey &amp; El-Bakry, 2017).",
+    footLatin: "Latin model: EMNIST Letters ile eğitildi (Cohen ve ark., 2017). ç, ğ, İ, ö, ş, ü harflerini içeren bir el yazısı veri seti olmadığı için bu harflerin eğitim görüntüleri, gerçek EMNIST harflerine bilgisayarla işaret eklenerek üretildi; diğer harflerden daha az güvenilir olabilirler.",
+    footCommon: `Kod: ${REPO}. İki model de taranmış kalem yazısından öğrendi; bu yüzden fareyle çizilen harfler onlara test kümelerindekinden daha zor gelir.`,
+    loading: "model yükleniyor…", ready: ms => `model hazır · ${ms} ms'de yüklendi`, failed: m => "model yüklenemedi: " + m,
+    file: "sayfa dosyadan açıldı: tarayıcılar burada modeli engeller. Bu klasörde  python3 -m http.server 8000  çalıştırıp http://localhost:8000 adresini açın",
+    f1: "resmi test kümesinde doğruluk", f1l: "gerçek el yazısında doğruluk (EMNIST test harfleri)", f2: "doğru harf ilk 3 tahminde", f3: mb => `parametre, ${mb} MB ONNX dosyası`,
+    f4a: "farklı yazarlardan test görüntüsü", f4l: "test görüntüsü; 4.800'ü sentetik Türkçe işaretli",
+  },
+  ar: {
+    title: "حرف · التعرّف على الحروف المكتوبة باليد بالعربية والتركية والإنجليزية",
+    lede: "ارسم حرفًا واحدًا. شبكة عصبية التفافية صغيرة تقرؤه على جهازك؛ ولا يغادر ما ترسمه هذه الصفحة.",
+    sArabic: "العربية", sLatin: "التركية + الإنجليزية",
+    draw: "ارسم هنا", undo: "تراجع", clear: "مسح", hint: "بالفأرة أو القلم أو الإصبع", prediction: "التوقّع",
+    waiting: "بانتظار حرف", waitingSub: "تظهر أدناه الحروف الخمسة الأكثر احتمالًا.",
+    sure: p => `الثقة ${p}%`, unsure: p => `${p}% — غير متأكد؛ انظر الاحتمالات الأخرى`,
+    seen: n => `<b>ما يراه النموذج.</b> تُقصّ خطوطك وتُوسَّط ثم يُعاد رسمها صورةً بيضاء على خلفية سوداء بحجم ${n}×${n}، وهي صيغة بيانات التدريب.`,
+    classes: n => `الأصناف الـ ${n}`,
+    footArabic: "النموذج العربي: مدرَّب على Arabic Handwritten Characters Dataset (El-Sawy, Loey &amp; El-Bakry, 2017).",
+    footLatin: "النموذج اللاتيني: مدرَّب على EMNIST Letters (Cohen et al., 2017). لا توجد مجموعة بيانات بخط اليد تشمل الحروف ç و ğ و İ و ö و ş و ü، لذا صُنعت صور تدريبها بإضافة علامات مرسومة حاسوبيًا إلى حروف EMNIST حقيقية؛ وقد تكون أقل دقة من بقية الحروف.",
+    footCommon: `الشيفرة: ${REPO}. تعلّم النموذجان من كتابة بالقلم ممسوحة ضوئيًا، لذا فالرسم بالفأرة أصعب عليهما مما توحي به نتائج الاختبار.`,
+    loading: "جارٍ تحميل النموذج…", ready: ms => `النموذج جاهز · ⁦${ms} ms⁩`, failed: m => "تعذّر تحميل النموذج: " + m,
+    file: "فُتحت الصفحة كملف: المتصفحات تمنع تحميل النموذج هنا. شغّل  python3 -m http.server 8000  في هذا المجلد وافتح http://localhost:8000",
+    f1: "الدقة على مجموعة الاختبار الرسمية", f1l: "الدقة على خط اليد الحقيقي (حروف اختبار EMNIST)", f2: "الحرف الصحيح ضمن أول 3 توقعات", f3: mb => `معامل، ملف ONNX بحجم ${mb} MB`,
+    f4a: "صورة اختبار من كُتّاب مختلفين", f4l: "صورة اختبار، منها 4,800 بعلامات تركية اصطناعية",
+  },
+};
+
+let lang = "en", script = "latin", lastProbs = null, status = ["loading"], metrics = null;
+let strokes = [], current = null, pending = false;
+const t = k => T[lang][k];
+const cfg = () => SCRIPTS[script];
+// What to show for class i: [big glyph, bar glyph, name]
+function letter(i) {
+  if (script === "arabic") return [AR[i][0], AR[i][0], lang === "ar" ? AR[i][2] : AR[i][1]];
+  return [LATIN[i][0], LATIN[i][0], LATIN[i].join(" · ")];
+}
+function stored(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function store(key, v) { try { localStorage.setItem(key, v); } catch (e) {} }
+function pickLang() {
+  if (T[stored("harf-lang")]) return stored("harf-lang");
+  for (const l of navigator.languages || [navigator.language || "en"]) {
+    const code = l.toLowerCase().split("-")[0];
+    if (T[code]) return code;
+  }
+  return "en";
+}
+
+function render() {
+  const c = cfg();
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.documentElement.dataset.script = script;
+  document.title = t("title");
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.innerHTML = t(el.dataset.i18n); });
+  document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  document.querySelectorAll("#scripts button").forEach(b => b.setAttribute("aria-pressed", b.dataset.script === script));
+  $("seenText").innerHTML = t("seen")(c.size);
+  $("classesLabel").textContent = t("classes")(c.n);
+  $("footer").innerHTML = [t(script === "arabic" ? "footArabic" : "footLatin"), t("footCommon")].join(" ");
+  const box = $("letters");
+  box.dir = script === "arabic" ? "rtl" : "ltr";
+  box.innerHTML = Array.from({ length: c.n }, (_, i) => `<span title="${letter(i)[2]}">${script === "arabic" ? AR[i][0] : LATIN[i].join("")}</span>`).join("");
+  const [k, arg] = status;
+  $("status").textContent = typeof t(k) === "function" ? t(k)(arg) : t(k);
+  const m = metrics && metrics[script];
+  $("facts").innerHTML = !m ? "" : [
+    [((m.real_handwriting_accuracy || m.test_accuracy) * 100).toFixed(2) + "%", t(script === "arabic" ? "f1" : "f1l")],
+    [(m.test_top3_accuracy * 100).toFixed(2) + "%", t("f2")],
+    [(m.parameters / 1000).toFixed(0) + "k", t("f3")(m.model_size_mb)],
+    [m.test_images.toLocaleString("en"), t(script === "arabic" ? "f4a" : "f4l")],
+  ].map(([b, s]) => `<div class="fact"><b>${b}</b><span>${s}</span></div>`).join("");
+  show(lastProbs);
+}
+function setLang(l) { lang = l; store("harf-lang", l); render(); }
+
+// ---------- drawing ----------
+const pad = $("pad"), pctx = pad.getContext("2d");
+const seen = $("seen"), sctx = seen.getContext("2d", { willReadFrequently: true });
+function pos(e) {
+  const r = pad.getBoundingClientRect();
+  return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
+}
+function path(ctx, pts) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  if (pts.length === 1) ctx.lineTo(pts[0][0] + 1e-4, pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.stroke();
+}
+function redraw() {
+  pctx.setTransform(1, 0, 0, 1, 0, 0);
+  pctx.clearRect(0, 0, pad.width, pad.height);
+  pctx.setTransform(pad.width, 0, 0, pad.height, 0, 0);
+  pctx.lineCap = pctx.lineJoin = "round";
+  pctx.lineWidth = 0.045;
+  pctx.strokeStyle = "#1c1a17";
+  for (const s of strokes) path(pctx, s);
+  $("undo").disabled = $("clear").disabled = strokes.length === 0;
+}
+pad.addEventListener("pointerdown", e => {
+  pad.setPointerCapture(e.pointerId);
+  current = [pos(e)];
+  strokes.push(current);
+  redraw(); schedule();
+});
+pad.addEventListener("pointermove", e => {
+  if (!current) return;
+  current.push(pos(e));
+  redraw(); schedule();
+});
+for (const ev of ["pointerup", "pointercancel"]) pad.addEventListener(ev, () => { current = null; schedule(); });
+$("clear").onclick = () => { strokes = []; redraw(); schedule(); };
+$("undo").onclick = () => { strokes.pop(); redraw(); schedule(); };
+
+// ---------- preprocessing: strokes -> size x size float image ----------
+function smooth(a, n) {            // separable [1 2 1]/4 kernel
+  const b = new Float32Array(a.length);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+    b[y * n + x] = (a[y * n + Math.max(x - 1, 0)] + 2 * a[y * n + x] + a[y * n + Math.min(x + 1, n - 1)]) / 4;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+    a[y * n + x] = (b[Math.max(y - 1, 0) * n + x] + 2 * b[y * n + x] + b[Math.min(y + 1, n - 1) * n + x]) / 4;
+  return a;
+}
+function rasterize(strokeList) {
+  const { size, target, stroke, blur } = cfg();
+  if (seen.width !== size) seen.width = seen.height = size;
+  sctx.setTransform(1, 0, 0, 1, 0, 0);
+  sctx.fillStyle = "#000";
+  sctx.fillRect(0, 0, size, size);
+  if (!strokeList.length) return null;
+  let x0 = 1, y0 = 1, x1 = 0, y1 = 0;
+  for (const s of strokeList) for (const [x, y] of s) {
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  const side = Math.max(x1 - x0, y1 - y0, 0.04);
+  const k = (target - stroke) / side;                 // drawing units -> model pixels
+  const ox = size / 2 - k * (x0 + x1) / 2, oy = size / 2 - k * (y0 + y1) / 2;
+  sctx.setTransform(k, 0, 0, k, ox, oy);
+  sctx.lineCap = sctx.lineJoin = "round";
+  sctx.lineWidth = stroke / k;
+  sctx.strokeStyle = "#fff";
+  for (const s of strokeList) path(sctx, s);
+  const img = sctx.getImageData(0, 0, size, size);
+  const out = new Float32Array(size * size);
+  for (let i = 0; i < out.length; i++) out[i] = img.data[i * 4] / 255;
+  for (let b = 0; b < blur; b++) smooth(out, size);
+  if (blur) {                                          // show the smoothed image, since that is what the model gets
+    for (let i = 0; i < out.length; i++) img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = Math.round(out[i] * 255);
+    sctx.setTransform(1, 0, 0, 1, 0, 0);
+    sctx.putImageData(img, 0, 0);
+  }
+  return out;
+}
+
+// ---------- inference ----------
+async function classify(pixels, name = script) {
+  const c = SCRIPTS[name];
+  const { probs } = await c.session.run({ image: new ort.Tensor("float32", pixels, [1, 1, c.size, c.size]) });
+  return Array.from(probs.data);
+}
+function schedule() {
+  if (pending) return;
+  pending = true;
+  requestAnimationFrame(async () => {
+    pending = false;
+    const name = script, pixels = rasterize(strokes);
+    if (!SCRIPTS[name].session) return;
+    if (!pixels) return show(null);
+    const probs = await classify(pixels, name);
+    if (name === script) show(probs);
+  });
+}
+function show(probs) {
+  lastProbs = probs;
+  const glyph = $("glyph"), bars = $("bars");
+  document.querySelectorAll("#letters span").forEach(el => el.classList.remove("hit"));
+  if (!probs) {
+    glyph.textContent = script === "arabic" ? "؟" : "?"; glyph.className = "glyph empty";
+    $("name").textContent = t("waiting");
+    $("conf").textContent = t("waitingSub");
+    bars.innerHTML = "";
+    return;
+  }
+  const order = probs.map((p, i) => [p, i]).sort((a, b) => b[0] - a[0]).slice(0, 5);
+  const [p, i] = order[0];
+  glyph.textContent = letter(i)[0]; glyph.className = "glyph";
+  $("name").textContent = letter(i)[2];
+  $("conf").textContent = (p > 0.8 ? t("sure") : t("unsure"))((p * 100).toFixed(0));
+  $("letters").children[i].classList.add("hit");
+  if (bars.children.length !== 5) bars.innerHTML = order.map(() => `<div class="bar"><span class="ar"></span><span class="nm"></span><div class="track"><div class="fill"></div></div><span class="pct"></span></div>`).join("");
+  order.forEach(([q, j], n) => {
+    const row = bars.children[n], [, g, nm] = letter(j);
+    row.children[0].textContent = g;
+    row.children[1].textContent = script === "arabic" ? nm : LATIN[j][1];
+    row.children[2].firstChild.style.width = (q * 100).toFixed(1) + "%";
+    row.children[3].textContent = (q * 100).toFixed(1) + "%";
+  });
+}
+
+// ---------- models ----------
+async function setScript(name, remember = true) {
+  script = name;
+  if (remember) store("harf-script", name);
+  strokes = []; lastProbs = null;
+  redraw(); rasterize(strokes);
+  const c = SCRIPTS[name];
+  if (!c.session) {
+    status = ["loading"]; render();
+    try {
+      const t0 = performance.now();
+      const s = await ort.InferenceSession.create(c.model, { executionProviders: ["wasm"] });
+      await s.run({ image: new ort.Tensor("float32", new Float32Array(c.size * c.size), [1, 1, c.size, c.size]) });
+      c.session = s; c.ms = (performance.now() - t0).toFixed(0);
+    } catch (err) {
+      status = location.protocol === "file:" ? ["file"] : ["failed", err.message];
+      return render();
+    }
+  }
+  if (script !== name) return;
+  status = ["ready", c.ms];
+  document.documentElement.dataset.ready = name;
+  render(); schedule();
+}
+
+// ---------- startup ----------
+ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+ort.env.wasm.numThreads = 1;
+lang = pickLang();
+document.querySelectorAll(".langs button").forEach(b => { b.onclick = () => setLang(b.dataset.lang); });
+document.querySelectorAll("#scripts button").forEach(b => { b.onclick = () => setScript(b.dataset.script); });
+// First visit: Arabic speakers start on the Arabic model, everyone else on the Latin one.
+setScript(SCRIPTS[stored("harf-script")] ? stored("harf-script") : (lang === "ar" ? "arabic" : "latin"), false);
+fetch("metrics.json").then(r => r.json()).then(m => { metrics = m; render(); }).catch(() => {});
+
+// Hooks used by tests/browser_check.py
+window.harf = { classify, rasterize, setScript, setStrokes(s) { strokes = s; redraw(); schedule(); } };
+</script>
+</body>
+</html>
